@@ -52,7 +52,10 @@ def is_not_number(num):
 @bot.message_handler(commands=['get_info', 'info'])
 def print_info(message):
     bot.send_message(message.chat.id, 'This bot has several commands.\n '
-                                      'rate(get_rate) <reduction> gives you the exchange of this currency')
+                                      '/rate(/get_rate) <reduction> gives you the exchange of this currency and compare '
+                                      'it with yesterdays exchange\n'
+                                      '/convert <reduction1> <amount> <reduction2> convert <amount> of currency1 into'
+                                      ' currency2 ')
 
 
 @bot.message_handler(commands=['print_rate', 'rate'])
