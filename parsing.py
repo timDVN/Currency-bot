@@ -7,13 +7,14 @@ soup = BeautifulSoup(responce, 'lxml')
 
 
 def get_rates():
-    a1 = soup.find('body')
-    a2 = a1.find('main', id="content")
-    a3 = a2.find_all('td')
-    for i in range(len(a3)):
-        a3[i] = a3[i].text
-    for i in range(len(a3) // 5):
-        a3[i * 5 + 4] = (a3[i * 5 + 4].replace(',', '.'))
-    return a3
+    body = soup.find('body')
+    content = body.find('main', id="content")
+    td = content.find_all('td')
+    for i in range(len(td)):
+        td[i] = td[i].text
+    for i in range(len(td) // 5):
+        td[i * 5 + 4] = (td[i * 5 + 4].replace(',', '.'))
+    return td
 
 
+get_rates()
