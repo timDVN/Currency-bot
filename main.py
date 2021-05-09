@@ -31,18 +31,19 @@ class ConverterClass:
         self.reduction.append('RUB')  # addition of Russian ruble
         self.index1.append('1')  #
         self.index2.append('1')  #
-        log.logger.debug("Update class new amount of currencies in ConvertClass is", len(self.reduction))
-        if not len(data.currencies_in_db()) == len(currency.reduction):
-            log.logger.warning("different number of currencies in ConvertClass and in db\n", currency.reduction, '\n',
-                               data.currencies_in_db())
+        log.logger.debug(f"Update class new amount of currencies in ConvertClass is {len(self.reduction)}")
+        if not len(data.currencies_in_db()) == len(self.reduction):
+            log.logger.warning(
+                f"different number of currencies in ConvertClass and in db {self.reduction}\n "
+                f"{data.currencies_in_db()}")
 
     def update_db(self):
         data.init_db(force=True)  # clearing the database
         for i in range(len(self.reduction)):  # writing new meaning
             data.add_currency(self.reduction[i], self.index2[i])
-        log.logger.debug("Update db new amount of currencies in db is", len(data.currencies_in_db()))
-        if not len(data.currencies_in_db()) == len(currency.reduction):
-            log.logger.critical("data loss during transfer\n", currency.reduction, '\n', data.currencies_in_db())
+        log.logger.debug(f"Update db new amount of currencies in db is {len(data.currencies_in_db())}")
+        if not len(data.currencies_in_db()) == len(self.reduction):
+            log.logger.critical(f"data loss during transfer\n {self.reduction} \n{data.currencies_in_db()}")
 
 
 bot = telebot.TeleBot(configure.TOKEN)
