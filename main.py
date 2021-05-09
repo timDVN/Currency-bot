@@ -1,5 +1,6 @@
 import configure
 import data
+import log
 import parsing
 import schedule
 import telebot
@@ -8,8 +9,8 @@ import time
 
 class ConverterClass:
     def __init__(self):
-        self.reduction = list()  # list of reducrions of currencies example "USD","RUB"...
-        self.index1 = list()  # list of first indexes in exchnge rate example : <index1> <reduction> = <index2> RUB
+        self.reduction = list()  # list of reductions of currencies example "USD","RUB"...
+        self.index1 = list()  # list of first indexes in exchange rate example : <index1> <reduction> = <index2> RUB
         self.index2 = list()
         self.update_class()
         self.update_db()
@@ -28,13 +29,20 @@ class ConverterClass:
             self.index1.append(parsing_res[i * 5 + 2])
             self.index2.append(parsing_res[i * 5 + 4])
         self.reduction.append('RUB')  # addition of Russian ruble
-        self.index1.append(1)  #
-        self.index2.append(1)  #
+        self.index1.append('1')  #
+        self.index2.append('1')  #
+        log.logger.debug("Update class new amount of currencies in ConvertClass is", len(self.reduction))
+        if not len(data.currencies_in_db()) == len(currency.reduction):
+            log.logger.warning("different number of currencies in ConvertClass and in db\n", currency.reduction, '\n',
+                               data.currencies_in_db())
 
     def update_db(self):
         data.init_db(force=True)  # clearing the database
         for i in range(len(self.reduction)):  # writing new meaning
-            data.add_pole(self.reduction[i], self.index2[i])
+            data.add_currency(self.reduction[i], self.index2[i])
+        log.logger.debug("Update db new amount of currencies in db is", len(data.currencies_in_db()))
+        if not len(data.currencies_in_db()) == len(currency.reduction):
+            log.logger.critical("data loss during transfer\n", currency.reduction, '\n', data.currencies_in_db())
 
 
 bot = telebot.TeleBot(configure.TOKEN)
@@ -42,6 +50,7 @@ currency = ConverterClass()
 
 
 def is_not_number(num):  # is used in converter for checking the correctness of the input
+    log.logger.debug(f"Function: is_not_number({num})")
     try:
         float(num)
         return False
@@ -51,6 +60,7 @@ def is_not_number(num):  # is used in converter for checking the correctness of 
 
 @bot.message_handler(commands=['get_info', 'info', 'start'])
 def print_info(message):
+    log.logger.debug("Function: print_info")
     bot.send_message(message.chat.id, 'This bot has several commands.\n '
                                       '/rate(/get_rate) <reduction> : gives you the exchange of this currency and '
                                       'compare '
@@ -68,11 +78,13 @@ def print_info(message):
 
 @bot.message_handler(commands=['print_rate', 'rate'])
 def print_rate(message):
+    log.logger.debug(f"Function: print_rate. message.text = {message.text}")
     give_rate(message.text, message.chat.id)
 
 
 @bot.message_handler(commands=['convert'])
 def converter(message):
+    log.logger.debug(f"Function: converter. message.text = {message.text}")
     if not len(message.text.split()) == 4:  # checking the correctness of the input
         bot.send_message(message.chat.id, "Wrong format")
     else:
@@ -89,13 +101,14 @@ def converter(message):
             place2 = currency.reduction.index(currency2)  # -//-
             res = amount * float(float(currency.index2[place1]) / float(currency.index1[place1])) / float(
                 float(currency.index2[place2]) / float(currency.index1[place2]))
-            res = round(res, 5)
+            res = round(res, 4)  # rounding to 4 decimal places
             bot.send_message(message.chat.id,
                              str(amount) + " " + currency1 + " = " + str(res) + " " + currency2)  # output
 
 
 @bot.message_handler(commands=['ListOfCurrencies'])
 def send_currencies(message):  # gives you list of currencies which you can use
+    log.logger.debug("Function: send_currencies")
     answer = str()
     for reduction in currency.reduction:
         answer = answer + reduction + '\n'
@@ -104,6 +117,7 @@ def send_currencies(message):  # gives you list of currencies which you can use
 
 @bot.message_handler(commands=['StartMailing'])
 def start_mailing(message):
+    log.logger.debug(f"Function: start_mailing. message.text = {message.text}")
     if checking_format1(message.text):  # checking the correctness of the input
         bot.send_message(message.chat.id, "Unknown reductions or format")
     else:
@@ -112,7 +126,8 @@ def start_mailing(message):
 
 
 @bot.message_handler(commands=['EndMailing'])
-def start_mailing(message):
+def end_mailing(message):
+    log.logger.debug(f"Function: end_mailing. message.text = {message.text}")
     if checking_format1(message.text):  # checking the correctness of the input
         bot.send_message(message.chat.id, "Unknown reductions or format")
     else:
@@ -122,6 +137,7 @@ def start_mailing(message):
 
 @bot.message_handler(commands=['MyMailing'])
 def my_mailing(message):
+    log.logger.debug(f"Function: MyMailing. message.text = {message.text}")
     answer = str()
     for reduction in data.list_of_currencies(str(message.chat.id)):
         answer = answer + reduction[0] + '\n'
@@ -131,6 +147,7 @@ def my_mailing(message):
 
 
 def give_rate(message, chat_id):
+    log.logger.debug(f"Function: give_rate. message = {message}")
     if checking_format1(message):  # checking the correctness of the input
         bot.send_message(chat_id, "Unknown reductions or format")
     else:
@@ -143,6 +160,7 @@ def give_rate(message, chat_id):
 
 
 def mailing():
+    log.logger.debug("Function: mailing")
     recipients = set(data.list_of_recipients())
     for recipient in recipients:
         currencies = data.list_of_currencies(recipient[0])
@@ -152,11 +170,14 @@ def mailing():
 
 def checking_format1(message):
     if len(message.split()) < 2:
+        log.logger.debug(f"Function: checking_format1. message = {message}. Answer: not correct")
         return True
     elif currency.reduction.count(
             message.split()[1]) == 0:  # checking the correctness of the input
+        log.logger.debug(f"Function: checking_format1. message = {message}. Answer: not correct")
         return True
     else:
+        log.logger.debug(f"Function: checking_format1. message = {message}. Answer: correct")
         return False
 
 
