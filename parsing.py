@@ -15,5 +15,8 @@ def get_rates():
     for i in range(len(td)):
         td[i] = td[i].text
     for i in range(len(td) // 5):
-        td[i * 5 + 4] = (td[i * 5 + 4].replace(',', '.'))
+        # parsing gives list objects like
+        # ['036', 'AUD', '1', 'Австралийский доллар', '57.8082', '944', 'AZN', '1','Азербайджанский манат' ...]
+        # <code>(never used in bot)   <reduction> <index1> <name>(never used in bot)  <index2>
+        td[i * 5 + 4] = (td[i * 5 + 4].replace(',', '.'))  # parsing of <index>
     return td
