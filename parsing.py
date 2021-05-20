@@ -8,6 +8,10 @@ soup = BeautifulSoup(response, 'lxml')
 
 
 def get_rates():
+    """
+    Returns list of objects like ['036', 'AUD', '1', 'Австралийский доллар', '57.8082', '944', 'AZN', '1',
+    'Азербайджанский манат' ...] according the www.cbr.ru :return: list
+    """
     log.logger.debug("Function: get_rates.(parsing.py)")
     body = soup.find('body')
     content = body.find('main', id="content")

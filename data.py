@@ -3,6 +3,10 @@ import sqlite3
 
 
 def init_db():
+    """
+    Creating of tables if tables don't exist
+    :return: None
+    """
     log.logger.debug("Function: init_db. (data.py)")
     with sqlite3.connect('Data.db') as conn:
         cursor = conn.cursor()
@@ -20,6 +24,10 @@ def init_db():
 
 
 def clear_currency_table():
+    """
+    Drop "currency" table and after crate new "currency" table
+    :return: None
+    """
     log.logger.debug("Function: clear_currency_table. (data.py)")
     with sqlite3.connect('Data.db') as conn:
         cursor = conn.cursor()
@@ -33,6 +41,12 @@ def clear_currency_table():
 
 
 def add_currency(redact: str, rate_new: str):  # add rate and currency to "currency" table
+    """
+    Adding new currency(redact) and it's rate(rate_new) to the "currency" table
+    :param redact:
+    :param rate_new:
+    :return: None
+    """
     log.logger.debug(f"Function: add_currency,  reduction = {redact}, rate = {rate_new}. (data.py)")
     with sqlite3.connect('Data.db') as conn:
         cursor = conn.cursor()
@@ -41,6 +55,12 @@ def add_currency(redact: str, rate_new: str):  # add rate and currency to "curre
 
 
 def add_recipient(chat_id: str, reduction: str):
+    """
+    Adding recipient's id(chat_id) with currency(reduction) to the "mailing" table
+    :param chat_id:
+    :param reduction:
+    :return: None
+    """
     log.logger.debug(f"Function: add_recipient, chat_id = {chat_id}, reduction = {reduction}. (data.py)")
     with sqlite3.connect('Data.db') as conn:
         cursor = conn.cursor()
@@ -49,6 +69,12 @@ def add_recipient(chat_id: str, reduction: str):
 
 
 def remove_recipient(chat_id: str, reduction: str):
+    """
+    Deletion recipient's id(chat_id) with currency(reduction) from the "mailing" table, if it exists
+    :param chat_id:
+    :param reduction:
+    :return:
+    """
     log.logger.debug(f"Function: remove_recipient, chat_id = {chat_id}, reduction = {reduction}. (data.py)")
     with sqlite3.connect('Data.db') as conn:
         query = 'DELETE FROM mailing  WHERE id = ?  AND reduction = ?'
@@ -58,6 +84,10 @@ def remove_recipient(chat_id: str, reduction: str):
 
 
 def list_of_recipients():
+    """
+    Select all recipient's chat_ids from table "mailing"
+    :return: list of chat_ids
+    """
     log.logger.debug("Function: list_of_recipients. (data.py)")
     with sqlite3.connect('Data.db') as conn:
         query = 'SELECT id FROM mailing'
@@ -67,6 +97,11 @@ def list_of_recipients():
 
 
 def list_of_currencies(chat_id: str):
+    """
+    Select contexts of all fields reduction where field id == chat_id from "mailing" table
+    :param chat_id:
+    :return: list of currencies
+    """
     log.logger.debug("Function: list_of_currencies. (data.py)")
     with sqlite3.connect('Data.db') as conn:
         query = f'SELECT reduction FROM mailing WHERE id = {chat_id} '
@@ -76,6 +111,10 @@ def list_of_currencies(chat_id: str):
 
 
 def currencies_in_db():  # return list of currencies from "currency" table
+    """
+    Select all reductions from table "currency"
+    :return: list of reductions
+    """
     log.logger.debug("Function: currencies_in_db. (data.py)")
     with sqlite3.connect('Data.db') as conn:
         query = 'SELECT reduction[0] FROM currency'
@@ -85,6 +124,12 @@ def currencies_in_db():  # return list of currencies from "currency" table
 
 
 def compare(new_rate: str, redact: str):
+    """
+    Compare new_rate of currency(redact) and old rate of it from table "currency"
+    :param new_rate:
+    :param redact:
+    :return: string '(+{diff})'  or ({diff})'
+    """
     log.logger.debug(f"Function: compare, new_rate = {new_rate}, redact = {redact} (data.py)")
     with sqlite3.connect('Data.db') as conn:
         query = 'SELECT rate FROM currency WHERE reduction = ? '
