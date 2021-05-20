@@ -1,21 +1,22 @@
-import configure
 import data
 import log
+import os
 import parsing
 import schedule
 import telebot
 import time
 from threading import Thread
 
+
 data.init_db()  # initialization of database
-bot = telebot.TeleBot(configure.TOKEN)  # initialization of bot
+bot = telebot.TeleBot(os.environ.get('TG_TOKEN'))  # initialization of bot
 
 
 class ConverterClass:
     def __init__(self):
-        self.reduction = list()  # list of reductions of currencies example 'USD','RUB'...
-        self.index1 = list()  # list of first indexes in exchange rate example : <index1> <reduction> = <index2> RUB
-        self.index2 = list()
+        self.reduction = []  # list of reductions of currencies example 'USD','RUB'...
+        self.index1 = []  # list of first indexes in exchange rate example : <index1> <reduction> = <index2> RUB
+        self.index2 = []
 
     def update_class(self):
         """
@@ -27,9 +28,9 @@ class ConverterClass:
         # parsing gives list objects like
         # ['036', 'AUD', '1', 'Австралийский доллар', '57.8082', '944', 'AZN', '1','Азербайджанский манат','44.0622'...]
         # <code>(never used in bot)   <reduction> <index1> <name>(never used in bot)  <index2>
-        self.reduction = list()
-        self.index1 = list()
-        self.index2 = list()
+        self.reduction = []
+        self.index1 = []
+        self.index2 = []
         for i in range(len(parsing_res) // 5):  # because every currency has 5 boxes
             # parsing gives list objects like
             # ['036', 'AUD', '1', 'Австралийский доллар', '57.8082', '944', 'AZN', '1','Азербайджанский манат' ...]
@@ -38,8 +39,8 @@ class ConverterClass:
             self.index1.append(parsing_res[i * 5 + 2])
             self.index2.append(parsing_res[i * 5 + 4])
         self.reduction.append('RUB')  # addition of Russian ruble
-        self.index1.append('1')  #
-        self.index2.append('1')  #
+        self.index1.append('1')  # addition of Russian ruble
+        self.index2.append('1')  # addition of Russian ruble
         log.logger.debug(f'Update class new amount of currencies in ConvertClass is {len(self.reduction)}')
         if not len(data.currencies_in_db()) == len(self.reduction):
             log.logger.warning(
@@ -118,7 +119,7 @@ def converter(message):
         bot.send_message(message.chat.id, 'Wrong format')
     else:
         currency1 = message.text.split()[1]
-        amount = (message.text.split()[2])
+        amount = message.text.split()[2]
         currency2 = message.text.split()[3]
         if currency.reduction.count(currency2) == 0 or currency.reduction.count(currency1) == 0 or is_not_number(
                 amount):  # checking the correctness of the input
@@ -142,7 +143,7 @@ def send_currencies(message):  # gives you list of currencies which you can use
     :return:None
     """
     log.logger.debug('Function: send_currencies')
-    answer = list()
+    answer = []
     for reduction in currency.reduction:
         answer.append(reduction)
     bot.send_message(message.chat.id, "\n".join(answer))
@@ -186,7 +187,7 @@ def my_mailing(message):
     :return: None
     """
     log.logger.debug(f'Function: MyMailing. message.text = {message.text}')
-    answer = list()
+    answer = []
     for reduction in data.list_of_currencies(str(message.chat.id)):
         answer.append(reduction[0])
     bot.send_message(message.chat.id, "\n".join(answer))
