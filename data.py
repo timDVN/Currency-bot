@@ -3,7 +3,7 @@ import sqlite3
 
 
 def init_db():
-    log.logger.debug(f"Function: init_db. (data.py)")
+    log.logger.debug("Function: init_db. (data.py)")
     with sqlite3.connect('Data.db') as conn:
         cursor = conn.cursor()
         cursor.execute(f'''
@@ -20,7 +20,7 @@ def init_db():
 
 
 def clear_currency_table():
-    log.logger.debug(f"Function: clear_currency_table. (data.py)")
+    log.logger.debug("Function: clear_currency_table. (data.py)")
     with sqlite3.connect('Data.db') as conn:
         cursor = conn.cursor()
         cursor.execute('DROP TABLE IF EXISTS currency')
@@ -89,7 +89,7 @@ def compare(new_rate: str, redact: str):
     with sqlite3.connect('Data.db') as conn:
         query = 'SELECT rate FROM currency WHERE reduction = ? '
         cursor = conn.cursor()
-        cursor.execute(query, (redact, ))
+        cursor.execute(query, (redact,))
         old_rate = float(cursor.fetchone()[0])
         diff = float(new_rate) - old_rate
         if diff >= 0:  # if currency became more expensive
