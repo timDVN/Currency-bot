@@ -110,16 +110,16 @@ def converter(message):
 @bot.message_handler(commands=['ListOfCurrencies'])
 def send_currencies(message):  # gives you list of currencies which you can use
     log.logger.debug('Function: send_currencies')
-    answer = str()
+    answer = list()
     for reduction in currency.reduction:
-        answer = answer + reduction + '\n'
-    bot.send_message(message.chat.id, answer)
+        answer.append(reduction)
+    bot.send_message(message.chat.id, "\n".join(answer))
 
 
 @bot.message_handler(commands=['StartMailing'])
 def start_mailing(message):
     log.logger.debug(f'Function: start_mailing. message.text = {message.text}')
-    if checking_format1(message.text):  # checking the correctness of the input
+    if checking_command_currency_input(message.text):  # checking the correctness of the input
         bot.send_message(message.chat.id, 'Unknown reductions or format')
     else:
         data.add_recipient(str(message.chat.id), message.text.split()[1])
@@ -129,7 +129,7 @@ def start_mailing(message):
 @bot.message_handler(commands=['EndMailing'])
 def end_mailing(message):
     log.logger.debug(f'Function: end_mailing. message.text = {message.text}')
-    if checking_format1(message.text):  # checking the correctness of the input
+    if checking_command_currency_input(message.text):  # checking the correctness of the input
         bot.send_message(message.chat.id, 'Unknown reductions or format')
     else:
         data.remove_recipient(str(message.chat.id), message.text.split()[1])
@@ -139,17 +139,17 @@ def end_mailing(message):
 @bot.message_handler(commands=['MyMailing'])
 def my_mailing(message):
     log.logger.debug(f'Function: MyMailing. message.text = {message.text}')
-    answer = str()
+    answer = list()
     for reduction in data.list_of_currencies(str(message.chat.id)):
-        answer = answer + reduction[0] + '\n'
-    bot.send_message(message.chat.id, answer)
+        answer.append(reduction[0])
+    bot.send_message(message.chat.id, "\n".join(answer))
     if len(answer) == 0:
         bot.send_message(message.chat.id, "You haven't any mailing")
 
 
 def give_rate(message, chat_id):
     log.logger.debug(f'Function: give_rate. message = {message}')
-    if checking_format1(message):  # checking the correctness of the input
+    if checking_command_currency_input(message):  # checking the correctness of the input
         bot.send_message(chat_id, 'Unknown reductions or format')
     else:
         reduction = message.split()[1]
@@ -169,16 +169,16 @@ def mailing():
             give_rate('. ' + reduction[0], int(recipient[0]))
 
 
-def checking_format1(message):
-    if len(message.split()) < 2:
-        log.logger.debug(f'Function: checking_format1. message = {message}. Answer: not correct')
+def checking_command_currency_input(message):
+    if len(message.split()) < len(['/command', 'currency']):
+        log.logger.debug(f'Function: checking_command_currency_input. message = {message}. Answer: not correct')
         return True
     elif currency.reduction.count(
             message.split()[1]) == 0:  # checking the correctness of the input
-        log.logger.debug(f'Function: checking_format1. message = {message}. Answer: not correct')
+        log.logger.debug(f'Function: checking_command_currency_input. message = {message}. Answer: not correct')
         return True
     else:
-        log.logger.debug(f'Function: checking_format1. message = {message}. Answer: correct')
+        log.logger.debug(f'Function: checking_command_currency_input. message = {message}. Answer: correct')
         return False
 
 
