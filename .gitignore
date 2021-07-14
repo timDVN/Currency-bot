@@ -1,0 +1,6 @@
+critical.log
+debug.log
+warning.log
+venv
+.idea
+__pycache__
